@@ -1,0 +1,211 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User authentication and authorization
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  passwordHash  String
+  name          String?
+  role          UserRole @default(VIEWER)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  sessions      Session[]
+  auditLogs     AuditLog[]
+}
+
+enum UserRole {
+  ADMIN
+  VIEWER
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expires      DateTime
+  createdAt    DateTime @default(now())
+}
+
+// Device data from ABM
+model Device {
+  id                     String    @id @default(cuid())
+  deviceId               String    @unique // ABM device ID (from "id" field in API response)
+  serialNumber           String    @unique
+  serialNumberMasked     String    // Masked version for display
+  productFamily          String?   // iPhone, iPad, Mac, etc.
+  deviceModel            String?
+  productType            String?   // e.g., "iPhone14,2", "Mac14,2"
+  deviceCapacity         String?
+  color                  String?
+  status                 String?   // ASSIGNED, UNASSIGNED, etc.
+  
+  // Dates
+  purchaseDate           DateTime? // From orderDateTime or manually entered
+  addedToOrgDate         DateTime? // From addedToOrgDateTime
+  updatedDate            DateTime? // From updatedDateTime
+  
+  // Network identifiers (sensitive, stored but not displayed by default)
+  wifiMacAddress         String?
+  bluetoothMacAddress    String?
+  ethernetMacAddress     String?
+  imei                   String?   // JSON array stored as string
+  meid                   String?   // JSON array stored as string
+  eid                    String?   // eSIM ID
+  
+  // MDM/Assignment
+  assignedServerId       String?
+  purchaseSourceType     String?
+  purchaseSourceId       String?
+  orderNumber            String?
+  releasedFromOrgDate    DateTime?
+  
+  // Raw data snapshot (JSONB)
+  rawPayload             Json?     // Full ABM API response for this device
+  
+  // Sync metadata
+  lastSeenFromABM        DateTime? // Last time we successfully fetched this device from ABM
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+  
+  // Relations
+  pricingResults         PricingResult[]
+  purchaseMetadata       PurchaseMetadata?
+  auditLogs              AuditLog[]
+  
+  @@index([productFamily])
+  @@index([status])
+  @@index([purchaseDate])
+  @@index([lastSeenFromABM])
+}
+
+// Manual purchase date/metadata entry if not available from ABM
+model PurchaseMetadata {
+  id          String   @id @default(cuid())
+  deviceId    String   @unique
+  device      Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  purchaseDate DateTime?
+  purchasePrice Decimal? @db.Decimal(10, 2)
+  notes       String?  @db.Text
+  enteredBy   String?  // User ID
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Pricing provider configuration and price tables
+model Pricing {
+  id                String   @id @default(cuid())
+  provider          PricingProvider
+  productFamily     String   // iPhone, iPad, Mac, Apple Watch, etc.
+  productType       String?  // Optional: specific model identifier like "iPhone14,2", "Mac14,2"
+  deviceModel       String?  // Human-readable model name, e.g. "iPhone 15 Pro", "MacBook Air M2"
+  storage           String?  // e.g., "64GB", "128GB", "256GB", "512GB", "1TB"
+  condition         PricingCondition @default(NEW)
+  region            String   // e.g., "US", "UAE", "IN"
+  price             Decimal  @db.Decimal(10, 2)
+  currency          Currency  @default(USD)
+  effectiveDate     DateTime @default(now())
+  expiresAt         DateTime? // Optional expiration
+  notes             String?  @db.Text
+  createdBy         String?  // User ID
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([provider, productFamily, productType])
+  @@index([effectiveDate])
+  @@index([productFamily, deviceModel, storage, condition, region])
+}
+
+enum PricingProvider {
+  MANUAL
+  APPLE_TRADEIN
+  MARKET
+}
+
+enum PricingCondition {
+  NEW
+  EXCELLENT
+  GOOD
+  FAIR
+  POOR
+}
+
+enum Currency {
+  USD
+  AED
+  INR
+}
+
+enum PricingMatchLevel {
+  EXACT
+  NO_STORAGE
+  FAMILY_FALLBACK
+  NONE
+}
+
+// Computed pricing results per device
+model PricingResult {
+  id            String   @id @default(cuid())
+  deviceId      String
+  device        Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  provider      PricingProvider
+  price         Decimal  @db.Decimal(10, 2)
+  currency      Currency @default(USD)
+  displayCurrency Currency? // User-selected display currency
+  displayPrice  Decimal? @db.Decimal(10, 2) // Converted price in display currency
+  matchLevel    PricingMatchLevel
+  condition     PricingCondition? // Condition used for calculation
+  explanation   String   @db.Text // Human-readable explanation
+  computedAt    DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([deviceId])
+  @@index([provider])
+  @@index([computedAt])
+  @@index([matchLevel])
+}
+
+// ABM Configuration (stored encrypted or in env, but audit log here)
+model ABMConfig {
+  id          String   @id @default(cuid())
+  clientId    String   // Encrypted or just audit reference
+  keyId       String   // Encrypted or just audit reference
+  isActive    Boolean  @default(true)
+  configuredBy String? // User ID
+  configuredAt DateTime @default(now())
+  lastTestedAt DateTime?
+  lastTestResult Boolean?
+  lastTestError String? @db.Text
+  updatedAt   DateTime @updatedAt
+}
+
+// Audit log for security and compliance
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  deviceId    String?
+  device      Device?  @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+  action      String   // "device.view", "device.serial.reveal", "pricing.update", "abm.config.update", etc.
+  resourceType String? // "device", "pricing", "abm_config", "user", etc.
+  resourceId  String?  // ID of the affected resource
+  details     Json?    // Additional context
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@index([resourceType, resourceId])
+}
