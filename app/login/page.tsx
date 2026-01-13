@@ -79,56 +79,69 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-md shadow-lg border-gray-200/80">
         <CardHeader>
           <div className="flex items-center justify-center gap-2">
             <CardTitle className="text-2xl text-center">ABM Sign In</CardTitle>
             <div className="relative group">
               <button
                 type="button"
-                className="w-5 h-5 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-semibold hover:bg-blue-200 transition-colors cursor-help"
+                className="w-5 h-5 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center text-[10px] font-medium hover:bg-gray-200 hover:text-gray-700 transition-all duration-150 cursor-help focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
                 aria-label="How to get ABM credentials"
               >
-                ℹ️
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  className="w-3.5 h-3.5"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                    clipRule="evenodd"
+                  />
+                </svg>
               </button>
-              {/* Tooltip/Popover */}
-              <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-80 bg-white border border-gray-200 rounded-lg shadow-xl p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 rotate-45 w-3 h-3 bg-white border-r border-b border-gray-200"></div>
-                <div className="relative z-10 space-y-3 text-sm">
-                  <h4 className="font-semibold text-gray-900 mb-2">How to Get Your ABM Credentials</h4>
-                  <div className="space-y-2 text-xs text-gray-600">
+              {/* Tooltip/Popover - Apple-style */}
+              <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-3 w-96 bg-white border border-gray-200/80 rounded-2xl shadow-2xl p-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none backdrop-blur-sm">
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 rotate-45 w-3 h-3 bg-white border-r border-b border-gray-200/80"></div>
+                <div className="relative z-10 space-y-4 text-sm">
+                  <h4 className="font-semibold text-gray-900 text-base mb-3">How to Get Your ABM Credentials</h4>
+                  <div className="space-y-3 text-xs text-gray-600 leading-relaxed">
                     <div>
-                      <strong className="text-gray-900">1. Access Apple Business Manager</strong>
-                      <p className="mt-1">Log in to <a href="https://business.apple.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">business.apple.com</a> with an Administrator or Device Enrollment Manager account.</p>
+                      <strong className="text-gray-900 font-medium">1. Access Apple Business Manager</strong>
+                      <p className="mt-1.5 text-gray-600">Log in to <a href="https://business.apple.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 underline">business.apple.com</a> with an Administrator or Device Enrollment Manager account.</p>
                     </div>
                     <div>
-                      <strong className="text-gray-900">2. Navigate to API Integration</strong>
-                      <p className="mt-1">Go to <strong>Settings</strong> → <strong>API Integration</strong> (or <strong>Integrations</strong> → <strong>API</strong>).</p>
+                      <strong className="text-gray-900 font-medium">2. Navigate to API Integration</strong>
+                      <p className="mt-1.5 text-gray-600">Go to <strong className="font-semibold">Settings</strong> → <strong className="font-semibold">API Integration</strong> (or <strong className="font-semibold">Integrations</strong> → <strong className="font-semibold">API</strong>).</p>
                     </div>
                     <div>
-                      <strong className="text-gray-900">3. Create a New API Key</strong>
-                      <p className="mt-1">Click <strong>"Create API Key"</strong> and give it a name (e.g., "Device Valuation App").</p>
+                      <strong className="text-gray-900 font-medium">3. Create a New API Key</strong>
+                      <p className="mt-1.5 text-gray-600">Click <strong className="font-semibold">"Create API Key"</strong> and give it a name (e.g., "Device Valuation App").</p>
                     </div>
                     <div>
-                      <strong className="text-gray-900">4. Download Your Credentials</strong>
-                      <p className="mt-1">Apple will provide:</p>
-                      <ul className="list-disc list-inside ml-2 mt-1 space-y-0.5">
-                        <li><strong>Client ID</strong>: Starts with <code className="bg-gray-100 px-1 rounded">BUSINESSAPI.</code></li>
-                        <li><strong>Key ID</strong>: A UUID format string</li>
-                        <li><strong>Private Key (.pem file)</strong>: Downloadable file</li>
+                      <strong className="text-gray-900 font-medium">4. Download Your Credentials</strong>
+                      <p className="mt-1.5 text-gray-600">Apple will provide:</p>
+                      <ul className="list-disc list-inside ml-2 mt-1.5 space-y-1 text-gray-600">
+                        <li><strong className="font-semibold">Client ID</strong>: Starts with <code className="bg-gray-100 px-1.5 py-0.5 rounded text-[11px] font-mono">BUSINESSAPI.</code></li>
+                        <li><strong className="font-semibold">Key ID</strong>: A UUID format string</li>
+                        <li><strong className="font-semibold">Private Key (.pem file)</strong>: Downloadable file</li>
                       </ul>
-                      <p className="mt-2 text-yellow-700 bg-yellow-50 p-2 rounded text-xs">
-                        <strong>⚠️ Important:</strong> The private key can only be downloaded once. Save it securely!
-                      </p>
+                      <div className="mt-2.5 p-2.5 bg-amber-50/80 border border-amber-200/60 rounded-lg">
+                        <p className="text-xs text-amber-800 leading-relaxed">
+                          <strong className="font-semibold">Important:</strong> The private key can only be downloaded once. Save it securely!
+                        </p>
+                      </div>
                     </div>
                     <div>
-                      <strong className="text-gray-900">5. Required Permissions</strong>
-                      <p className="mt-1">Ensure your API key has <code className="bg-gray-100 px-1 rounded">business.api</code> scope and device read permissions.</p>
+                      <strong className="text-gray-900 font-medium">5. Required Permissions</strong>
+                      <p className="mt-1.5 text-gray-600">Ensure your API key has <code className="bg-gray-100 px-1.5 py-0.5 rounded text-[11px] font-mono">business.api</code> scope and device read permissions.</p>
                     </div>
-                    <div className="pt-2 border-t border-gray-200">
-                      <p className="text-xs text-blue-700">
-                        <a href="https://support.apple.com/guide/apple-business-manager/api-integration-apdbfa0c5b0a/web" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-900">
+                    <div className="pt-3 border-t border-gray-200/60">
+                      <p className="text-xs text-blue-600">
+                        <a href="https://support.apple.com/guide/apple-business-manager/api-integration-apdbfa0c5b0a/web" target="_blank" rel="noopener noreferrer" className="hover:text-blue-700 underline font-medium">
                           View Apple's API Integration documentation →
                         </a>
                       </p>
@@ -183,13 +196,30 @@ export default function LoginPage() {
             </div>
 
             {error && (
-              <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
-                {error}
+              <div className="p-3.5 text-sm text-red-700 bg-red-50/80 border border-red-200/60 rounded-xl">
+                <div className="flex items-start gap-2">
+                  <svg className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                  <span>{error}</span>
+                </div>
               </div>
             )}
 
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Signing in..." : "Sign In"}
+            <Button 
+              type="submit" 
+              className="w-full bg-gray-900 hover:bg-gray-800 text-white font-medium transition-all duration-150 shadow-sm hover:shadow-md" 
+              disabled={loading}
+            >
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Signing in...
+                </span>
+              ) : "Sign In"}
             </Button>
           </form>
 
