@@ -7,7 +7,6 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { fetchDevices, type ABMDevice } from "@/lib/abm/api"
-import { prisma } from "@/lib/db"
 import { maskSerialNumber } from "@/lib/utils"
 import type { ABMConfig } from "@/lib/abm/auth"
 
@@ -16,6 +15,12 @@ export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
 export const fetchCache = "force-no-store"
 export const revalidate = 0
+
+// Lazy-load Prisma to prevent build-time initialization
+async function getPrisma() {
+  const { prisma } = await import("@/lib/db")
+  return prisma
+}
 
 export async function POST(request: NextRequest) {
   // Helper functions defined inside handler to prevent build-time analysis
@@ -31,6 +36,7 @@ export async function POST(request: NextRequest) {
   }
 
   async function syncDevice(device: ABMDevice) {
+    const prisma = await getPrisma()
     const attrs = device.attributes
     const serialNumber = attrs.serialNumber || device.id
     const serialNumberMasked = maskSerialNumber(serialNumber)
