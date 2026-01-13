@@ -46,6 +46,8 @@ export default function DashboardPage() {
   })
   const [loading, setLoading] = useState(true)
   const [calculatingPricing, setCalculatingPricing] = useState(false)
+  const [syncing, setSyncing] = useState(false)
+  const [syncError, setSyncError] = useState<string | null>(null)
 
   useEffect(() => {
     // Check if user is logged in
@@ -83,6 +85,51 @@ export default function DashboardPage() {
       console.error("❌ Error loading stats:", error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const syncDevices = async () => {
+    const stored = sessionStorage.getItem("abm_credentials")
+    if (!stored) {
+      router.push("/login")
+      return
+    }
+
+    setSyncing(true)
+    setSyncError(null)
+    try {
+      const credentials = JSON.parse(stored)
+      const response = await fetch("/api/abm/sync", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          clientId: credentials.clientId,
+          keyId: credentials.keyId,
+          privateKeyBase64: credentials.privateKeyBase64,
+          limit: 100, // Sync up to 100 devices at a time
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to sync devices")
+      }
+
+      console.log("✅ Sync successful:", data)
+      alert(`Successfully synced ${data.synced} device(s) from ABM!`)
+      
+      // Reload stats after sync
+      await loadStats()
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to sync devices"
+      console.error("❌ Sync error:", errorMessage)
+      setSyncError(errorMessage)
+      alert(`Sync failed: ${errorMessage}`)
+    } finally {
+      setSyncing(false)
     }
   }
 
@@ -143,6 +190,13 @@ export default function DashboardPage() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button
+            onClick={syncDevices}
+            disabled={syncing}
+            variant="default"
+          >
+            {syncing ? "Syncing..." : "Sync from ABM"}
+          </Button>
           <Button
             onClick={calculatePricing}
             disabled={calculatingPricing}

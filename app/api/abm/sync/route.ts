@@ -125,9 +125,21 @@ export async function POST(request: NextRequest) {
       jwtAudience: process.env.ABM_JWT_AUDIENCE || "https://account.apple.com/auth/oauth2/v2/token",
     }
 
+    console.log("[ABM Sync] Fetching devices from ABM...")
     let devicesResponse = await fetchDevices(config, { limit: limit || 50, cursor })
     let devices = devicesResponse.data
     let nextCursor = devicesResponse.meta?.paging?.nextCursor
+
+    console.log(`[ABM Sync] Received ${devices.length} devices from ABM API`)
+    console.log(`[ABM Sync] Response meta:`, devicesResponse.meta)
+    
+    if (devices.length === 0) {
+      console.warn("[ABM Sync] ⚠️  No devices returned from ABM API")
+      console.warn("[ABM Sync] This could mean:")
+      console.warn("  - Your ABM account has no devices")
+      console.warn("  - Your API credentials don't have access")
+      console.warn("  - There's an issue with the API call")
+    }
 
     let synced = 0
     let errors: string[] = []
