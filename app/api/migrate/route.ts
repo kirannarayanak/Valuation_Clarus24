@@ -1,80 +1,87 @@
-/**
- * API Route to run Prisma migrations or push schema
- * 
- * Call this after deployment to ensure database is up to date
- * GET /api/migrate
- */
-
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
+import { readFileSync } from "fs"
+import { join } from "path"
 
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     console.log("🔄 Setting up database schema...")
     
-    // Use Prisma's programmatic API to push schema
-    const { PrismaClient } = require("@prisma/client")
-    const { execSync } = require("child_process")
-    
-    console.log("📊 Pushing Prisma schema to database...")
-    
-    // Try using Prisma's db push via execSync
-    // In Vercel, we need to use the full path or ensure npx is available
+    // Check if tables already exist
     try {
-      const result = execSync(
-        "node_modules/.bin/prisma db push --accept-data-loss --skip-generate || npx prisma db push --accept-data-loss --skip-generate",
-        {
-          stdio: "pipe",
-          env: { ...process.env, PATH: process.env.PATH || "/usr/local/bin:/usr/bin:/bin" },
-          timeout: 60000, // 60 second timeout
-        }
-      )
-      console.log("✅ Prisma db push output:", result.toString())
-    } catch (execError: any) {
-      console.error("❌ execSync failed, trying alternative method...", execError.message)
+      await prisma.device.count()
+      console.log("✅ Database tables already exist")
+      return NextResponse.json({
+        success: true,
+        message: "Database schema already exists",
+      })
+    } catch (checkError: any) {
+      if (!checkError?.message?.includes("does not exist")) {
+        throw checkError
+      }
+      console.log("⚠️  Tables don't exist, need to create them")
+    }
+    
+    // Try to read and execute SQL file
+    try {
+      const sqlPath = join(process.cwd(), "supabase-schema.sql")
+      const sql = readFileSync(sqlPath, "utf-8")
       
-      // Alternative: Use Prisma's programmatic API if available
-      // This is a fallback - Prisma doesn't have a direct programmatic db push
-      // So we'll return an error with instructions
+      // Execute SQL using Prisma's $executeRawUnsafe
+      // Split by semicolons and execute each statement
+      const statements = sql
+        .split(";")
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0 && !s.startsWith("--"))
+      
+      console.log(`📊 Executing ${statements.length} SQL statements...`)
+      
+      for (const statement of statements) {
+        if (statement.trim()) {
+          try {
+            await prisma.$executeRawUnsafe(statement)
+          } catch (stmtError: any) {
+            // Ignore "already exists" errors
+            if (!stmtError?.message?.includes("already exists")) {
+              console.warn(`⚠️  Statement warning: ${stmtError.message}`)
+            }
+          }
+        }
+      }
+      
+      // Verify tables exist
+      await prisma.device.count()
+      console.log("✅ Database tables created successfully")
+      
+      return NextResponse.json({
+        success: true,
+        message: "Database schema created successfully",
+      })
+    } catch (sqlError: any) {
+      console.error("❌ SQL execution failed:", sqlError.message)
+      
+      // Return instructions for manual setup
       return NextResponse.json(
         {
-          error: "Failed to create tables automatically",
-          message: "Please run migrations manually. See instructions below.",
+          error: "Automatic table creation failed",
+          message: "Please run the SQL manually in Supabase",
           instructions: [
-            "1. Install Vercel CLI: npm i -g vercel",
-            "2. Run: vercel env pull",
-            "3. Run: npx prisma db push",
-            "4. Or use Supabase dashboard to run SQL migrations",
+            "1. Go to your Supabase Dashboard",
+            "2. Click 'SQL Editor' in the left sidebar",
+            "3. Click 'New Query'",
+            "4. Copy the contents of supabase-schema.sql from your repo",
+            "5. Paste and click 'Run'",
+            "6. Then refresh this page or try syncing devices",
           ],
-          execError: execError?.message || String(execError),
+          alternative: "Or run locally: npx prisma db push",
+          errorDetails: sqlError.message,
         },
         { status: 500 }
       )
     }
-    
-    // Verify tables exist by trying a simple query
-    try {
-      await prisma.device.count()
-      console.log("✅ Database tables created and verified")
-    } catch (verifyError) {
-      console.warn("⚠️  Tables might not be fully created yet")
-      return NextResponse.json(
-        {
-          success: false,
-          warning: "Schema push completed but tables might not be ready yet",
-          message: "Please try again in a few seconds",
-        },
-        { status: 200 }
-      )
-    }
-    
-    return NextResponse.json({
-      success: true,
-      message: "Database schema created successfully",
-    })
   } catch (error) {
     console.error("❌ Database setup error:", error)
     return NextResponse.json(
