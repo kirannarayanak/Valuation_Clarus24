@@ -29,3 +29,34 @@ export const prisma =
   })
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma
+
+// Helper to check if tables exist and create them if needed
+let schemaChecked = false
+export async function ensureDatabaseSchema() {
+  if (schemaChecked) return
+  
+  try {
+    // Try a simple query to check if tables exist
+    await prisma.device.count()
+    schemaChecked = true
+    console.log("✅ Database schema exists")
+  } catch (error: any) {
+    if (error?.message?.includes("does not exist")) {
+      console.log("⚠️  Database tables don't exist. Creating schema...")
+      try {
+        const { execSync } = require("child_process")
+        execSync("npx prisma db push --accept-data-loss --skip-generate", {
+          stdio: "inherit",
+          env: process.env,
+        })
+        schemaChecked = true
+        console.log("✅ Database schema created")
+      } catch (pushError) {
+        console.error("❌ Failed to create database schema:", pushError)
+        throw pushError
+      }
+    } else {
+      throw error
+    }
+  }
+}
