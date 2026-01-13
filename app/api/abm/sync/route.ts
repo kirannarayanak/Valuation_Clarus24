@@ -11,6 +11,10 @@ import { prisma } from "@/lib/db"
 import { maskSerialNumber } from "@/lib/utils"
 import type { ABMConfig } from "@/lib/abm/auth"
 
+// Mark this route as dynamic to prevent build-time analysis
+export const dynamic = "force-dynamic"
+export const runtime = "nodejs"
+
 function parseDate(dateString: string | undefined): Date | null {
   if (!dateString) return null
   const date = new Date(dateString)

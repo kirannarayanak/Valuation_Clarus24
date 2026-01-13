@@ -10,6 +10,10 @@ import { calculatePricingForDevice } from "@/lib/pricing/engine"
 import { PricingCondition } from "@/lib/pricing/types"
 import { Currency } from "@/lib/pricing/currency"
 
+// Mark this route as dynamic to prevent build-time analysis
+export const dynamic = "force-dynamic"
+export const runtime = "nodejs"
+
 export async function POST(request: NextRequest) {
   try {
     // Parse body if present, otherwise use defaults
