@@ -23,12 +23,17 @@ export async function GET(request: NextRequest) {
       take: 10,
     })
 
-    // Check for orphaned results
-    const orphaned = await prisma.pricingResult.findMany({
-      where: {
-        device: null,
-      },
+    // Check for orphaned results (pricing results without a matching device)
+    const allDeviceIds = await prisma.device.findMany({
+      select: { id: true },
     })
+    const deviceIdSet = new Set(allDeviceIds.map((d) => d.id))
+    const allPricingResultsForOrphanCheck = await prisma.pricingResult.findMany({
+      select: { id: true, deviceId: true },
+    })
+    const orphaned = allPricingResultsForOrphanCheck.filter(
+      (pr) => !deviceIdSet.has(pr.deviceId)
+    )
 
     return NextResponse.json({
       devices: devices.map((d) => ({
