@@ -34,7 +34,11 @@ function loadPrivateKey(config: ABMConfig): string {
   let privateKeyPEM: string
   
   if (config.privateKeyBase64) {
-    privateKeyPEM = Buffer.from(config.privateKeyBase64, "base64").toString("utf-8")
+    try {
+      privateKeyPEM = Buffer.from(config.privateKeyBase64, "base64").toString("utf-8")
+    } catch (error) {
+      throw new Error(`Failed to decode base64 private key: ${error instanceof Error ? error.message : String(error)}`)
+    }
   } else if (config.privateKeyPath) {
     // Resolve path relative to project root or use absolute path
     const keyPath = config.privateKeyPath.startsWith("/")
@@ -48,6 +52,19 @@ function loadPrivateKey(config: ABMConfig): string {
   
   // Clean and normalize the PEM key
   privateKeyPEM = privateKeyPEM.trim()
+  
+  // Remove any carriage returns and normalize line endings
+  privateKeyPEM = privateKeyPEM.replace(/\r\n/g, "\n").replace(/\r/g, "\n")
+  
+  // Ensure proper PEM format with newlines
+  if (!privateKeyPEM.includes("-----BEGIN PRIVATE KEY-----")) {
+    // Try to fix if headers are missing
+    if (privateKeyPEM.includes("BEGIN EC PRIVATE KEY")) {
+      // EC private key format - ensure proper headers
+      privateKeyPEM = privateKeyPEM.replace(/-----BEGIN EC PRIVATE KEY-----/g, "-----BEGIN EC PRIVATE KEY-----\n")
+      privateKeyPEM = privateKeyPEM.replace(/-----END EC PRIVATE KEY-----/g, "\n-----END EC PRIVATE KEY-----")
+    }
+  }
   
   // Ensure proper line endings
   if (!privateKeyPEM.endsWith("\n")) {
@@ -63,6 +80,10 @@ function loadPrivateKey(config: ABMConfig): string {
 export async function buildClientAssertion(config: ABMConfig): Promise<string> {
   const now = Math.floor(Date.now() / 1000)
   const jwtId = crypto.randomUUID()
+  
+  console.log("[ABM Auth] Building client assertion JWT...")
+  console.log("[ABM Auth] Client ID:", config.clientId)
+  console.log("[ABM Auth] Key ID:", config.keyId)
   
   const privateKeyPEM = loadPrivateKey(config)
   
@@ -81,7 +102,10 @@ export async function buildClientAssertion(config: ABMConfig): Promise<string> {
     if (keyDetails && keyDetails.namedCurve !== "prime256v1") {
       throw new Error(`Key curve must be P-256 (prime256v1), got: ${keyDetails.namedCurve}`)
     }
+    
+    console.log("[ABM Auth] ✓ Key validated: EC P-256")
   } catch (error) {
+    console.error("[ABM Auth] ✗ Key validation failed:", error)
     if (error instanceof Error && error.message.includes("Key must be")) {
       throw error
     }
@@ -94,18 +118,31 @@ export async function buildClientAssertion(config: ABMConfig): Promise<string> {
   try {
     const exported = keyObj.export({ format: "pem", type: "pkcs8" })
     pkcs8Key = typeof exported === "string" ? exported : exported.toString("utf-8")
+    console.log("[ABM Auth] ✓ Key exported to PKCS8 format")
   } catch (error) {
+    console.warn("[ABM Auth] ⚠ Export to PKCS8 failed, using original PEM:", error)
     // If export fails, try using the original PEM (it might already be PKCS8)
     pkcs8Key = privateKeyPEM
   }
   
   // Import the PKCS8 key for signing with jose
-  const signingKey = await importPKCS8(pkcs8Key, "ES256")
+  let signingKey
+  try {
+    signingKey = await importPKCS8(pkcs8Key, "ES256")
+    console.log("[ABM Auth] ✓ Key imported for signing")
+  } catch (error) {
+    console.error("[ABM Auth] ✗ Failed to import key for signing:", error)
+    throw new Error(`Failed to import private key for signing: ${error instanceof Error ? error.message : String(error)}`)
+  }
+  
+  const jwtAudience = config.jwtAudience || "https://account.apple.com/auth/oauth2/v2/token"
+  console.log("[ABM Auth] JWT Audience:", jwtAudience)
+  console.log("[ABM Auth] JWT Claims: iss=", config.clientId, ", sub=", config.clientId, ", aud=", jwtAudience)
   
   const jwt = await new SignJWT({
     iss: config.clientId, // issuer = client_id
     sub: config.clientId, // subject = client_id
-    aud: config.jwtAudience || "https://account.apple.com/auth/oauth2/v2/token",
+    aud: jwtAudience,
     iat: now,
     exp: now + JWT_TTL_SECONDS,
     jti: jwtId,
@@ -118,6 +155,7 @@ export async function buildClientAssertion(config: ABMConfig): Promise<string> {
     .setExpirationTime(now + JWT_TTL_SECONDS)
     .sign(signingKey)
   
+  console.log("[ABM Auth] ✓ JWT signed successfully")
   return jwt
 }
 
@@ -125,9 +163,11 @@ export async function buildClientAssertion(config: ABMConfig): Promise<string> {
  * Exchange client_assertion for an ABM access token
  */
 export async function getAccessToken(config: ABMConfig): Promise<ABMTokenResponse> {
+  console.log("[ABM Auth] Getting access token...")
   const clientAssertion = await buildClientAssertion(config)
   
   const tokenUrl = config.tokenUrl || "https://account.apple.com/auth/oauth2/token"
+  console.log("[ABM Auth] Token URL:", tokenUrl)
   
   const formData = new URLSearchParams({
     grant_type: "client_credentials",
@@ -137,6 +177,7 @@ export async function getAccessToken(config: ABMConfig): Promise<ABMTokenRespons
     scope: "business.api",
   })
   
+  console.log("[ABM Auth] Requesting token from Apple...")
   const response = await fetch(tokenUrl, {
     method: "POST",
     headers: {
@@ -154,12 +195,15 @@ export async function getAccessToken(config: ABMConfig): Promise<ABMTokenRespons
       errorBody = { raw: errorText }
     }
     
+    console.error("[ABM Auth] ✗ Token request failed:", response.status, errorBody)
     throw new Error(
       `ABM authentication failed: ${response.status} ${response.statusText}. ${JSON.stringify(errorBody)}`
     )
   }
   
-  return (await response.json()) as ABMTokenResponse
+  const tokenResponse = await response.json() as ABMTokenResponse
+  console.log("[ABM Auth] ✓ Access token received")
+  return tokenResponse
 }
 
 /**
