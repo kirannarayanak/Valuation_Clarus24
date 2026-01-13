@@ -377,7 +377,6 @@ export default function DashboardPage() {
                     <TableHead>Capacity</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Resale Price</TableHead>
-                    <TableHead>Provider</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -433,22 +432,6 @@ export default function DashboardPage() {
                             </div>
                           ) : (
                             <span className="text-muted-foreground">—</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {device.resaleProvider ? (
-                            <div className="space-y-1">
-                              <span className="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700">
-                                {device.resaleProvider === "MANUAL" ? "Manual" : device.resaleProvider === "MARKET" ? "Market" : device.resaleProvider === "APPLE_TRADEIN" ? "Apple Trade-In" : device.resaleProvider}
-                              </span>
-                              {device.matchLevel && device.matchLevel !== "NONE" && (
-                                <div className="text-[10px] text-gray-500 mt-1">
-                                  {device.matchLevel === "EXACT" ? "Exact match" : device.matchLevel === "NO_STORAGE" ? "No storage match" : device.matchLevel === "FAMILY_FALLBACK" ? "Family fallback" : device.matchLevel}
-                                </div>
-                              )}
-                            </div>
-                          ) : (
-                            <span className="text-muted-foreground text-sm">—</span>
                           )}
                         </TableCell>
                       </TableRow>
