@@ -5,6 +5,10 @@ import { formatDate, formatCurrency, formatDateTime, maskSerialNumber } from "@/
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
+// Mark this page as dynamic to prevent build-time database access
+export const dynamic = "force-dynamic"
+export const runtime = "nodejs"
+
 interface DeviceDetailPageProps {
   params: {
     id: string
