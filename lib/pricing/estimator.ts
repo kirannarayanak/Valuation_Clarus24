@@ -26,14 +26,29 @@ interface PriceEstimate {
 }
 
 /**
- * Base Values (BV) - Starting market value for product families in EXCELLENT condition
- * Source: Average market prices from Swappa, eBay sold listings, trade-in programs (2025 Q1)
+ * Base Values (BV) - Starting RESALE market value for product families in EXCELLENT condition
+ * 
+ * IMPORTANT: These are RESALE prices (used device market values), NOT Apple retail prices.
+ * 
+ * Source: Average resale market prices from:
+ * - Swappa (used device marketplace)
+ * - eBay sold listings (completed transactions)
+ * - Trade-in programs (Gazelle, Decluttr, etc.)
+ * - Back Market (refurbished prices)
+ * 
+ * Data from: 2025 Q1 market analysis
+ * 
+ * For comparison, Apple retail prices are much higher:
+ * - iPhone: $799-$1,199 (new)
+ * - iPad: $449-$1,099 (new)
+ * - Mac: $999-$2,499 (new)
+ * - Apple Watch: $249-$799 (new)
  */
 const BASE_VALUES: Record<string, number> = {
-  iPhone: 650,
-  iPad: 480,
-  Mac: 960,
-  "Apple Watch": 320,
+  iPhone: 650,      // Resale value, NOT $999+ retail
+  iPad: 480,        // Resale value, NOT $449+ retail
+  Mac: 960,         // Resale value, NOT $999+ retail
+  "Apple Watch": 320, // Resale value, NOT $249+ retail
 }
 
 /**

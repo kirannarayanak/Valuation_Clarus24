@@ -1,7 +1,11 @@
 # Official Pricing Formula
 
 ## Purpose
-This document defines the mathematical formula used to calculate resale prices for Apple devices. The formula is designed to be transparent, auditable, and accurate for presentation to stakeholders.
+This document defines the mathematical formula used to calculate **resale prices** (used device market values) for Apple devices. 
+
+**IMPORTANT**: All prices in this system are **RESALE/MARKET prices** for used devices, **NOT Apple retail prices** for new devices.
+
+The formula is designed to be transparent, auditable, and accurate for presentation to stakeholders.
 
 ---
 
@@ -14,16 +18,24 @@ Resale Price = Base Value × Condition Factor × Storage Factor × Generation Fa
 ### Formula Components
 
 #### 1. Base Value (BV)
-The starting market value for a product family in EXCELLENT condition.
+The starting **resale/market value** for a product family in EXCELLENT condition.
 
-| Product Family | Base Value (USD) |
-|----------------|------------------|
-| iPhone | $650 |
-| iPad | $480 |
-| Mac | $960 |
-| Apple Watch | $320 |
+**IMPORTANT**: These are **RESALE prices** (used device market values), **NOT Apple retail prices**.
 
-**Source**: Average market prices from Swappa, eBay sold listings, and trade-in programs (2025 data).
+| Product Family | Base Value (USD) | Apple Retail (for comparison) |
+|----------------|------------------|-------------------------------|
+| iPhone | $650 | $799-$1,199 (new) |
+| iPad | $480 | $449-$1,099 (new) |
+| Mac | $960 | $999-$2,499 (new) |
+| Apple Watch | $320 | $249-$799 (new) |
+
+**Source**: Average **resale market prices** from:
+- Swappa (used device marketplace)
+- eBay sold listings (completed transactions)
+- Trade-in programs (Gazelle, Decluttr, etc.)
+- Back Market (refurbished prices)
+
+**NOT from**: Apple.com retail prices, Apple Store new device prices, or MSRP.
 
 ---
 
