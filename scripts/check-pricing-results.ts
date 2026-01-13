@@ -61,12 +61,17 @@ async function checkPricingResults() {
       console.log("")
     })
 
-    // Check for orphaned pricing results
-    const orphaned = await prisma.pricingResult.findMany({
-      where: {
-        device: null,
-      },
+    // Check for orphaned pricing results (pricing results without a matching device)
+    const allDeviceIds = await prisma.device.findMany({
+      select: { id: true },
     })
+    const deviceIdSet = new Set(allDeviceIds.map((d) => d.id))
+    const allPricingResultsForOrphanCheck = await prisma.pricingResult.findMany({
+      select: { id: true, deviceId: true },
+    })
+    const orphaned = allPricingResultsForOrphanCheck.filter(
+      (pr) => !deviceIdSet.has(pr.deviceId)
+    )
 
     if (orphaned.length > 0) {
       console.log(`⚠️  Found ${orphaned.length} orphaned pricing results (device doesn't exist)`)

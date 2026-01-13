@@ -9,6 +9,8 @@
 
 import { prisma } from "../lib/db"
 import { readFileSync } from "fs"
+import { PricingProvider, PricingCondition } from "../lib/pricing/types"
+import { Currency } from "../lib/pricing/currency"
 
 interface PricingEntry {
   provider: string
@@ -66,29 +68,34 @@ async function main() {
         continue
       }
 
+      // Cast string values to enum types
+      const provider = entry.provider.toUpperCase() as PricingProvider
+      const condition = entry.condition.toUpperCase() as PricingCondition
+      const currency = (entry.currency || "USD").toUpperCase() as Currency
+
       // Check if pricing already exists
       const existing = await prisma.pricing.findFirst({
         where: {
-          provider: entry.provider,
+          provider: provider,
           productFamily: entry.productFamily,
           deviceModel: entry.deviceModel || null,
           productType: entry.productType || null,
           storage: entry.storage || null,
-          condition: entry.condition,
+          condition: condition,
           region: entry.region,
         },
       })
 
       const pricingData = {
-        provider: entry.provider,
+        provider: provider,
         productFamily: entry.productFamily,
         deviceModel: entry.deviceModel || null,
         productType: entry.productType || null,
         storage: entry.storage || null,
-        condition: entry.condition,
+        condition: condition,
         region: entry.region,
         price: entry.price,
-        currency: entry.currency || "USD",
+        currency: currency,
         notes: entry.notes || null,
         effectiveDate: new Date(),
       }

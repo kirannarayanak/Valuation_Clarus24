@@ -92,7 +92,8 @@ export async function buildClientAssertion(config: ABMConfig): Promise<string> {
   // jose library expects PKCS8 format (which is what PEM private keys typically are)
   let pkcs8Key: string
   try {
-    pkcs8Key = keyObj.export({ format: "pem", type: "pkcs8" })
+    const exported = keyObj.export({ format: "pem", type: "pkcs8" })
+    pkcs8Key = typeof exported === "string" ? exported : exported.toString("utf-8")
   } catch (error) {
     // If export fails, try using the original PEM (it might already be PKCS8)
     pkcs8Key = privateKeyPEM

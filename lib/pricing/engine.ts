@@ -230,18 +230,28 @@ export async function calculatePricingForDevice(
     
     // Try to save fallback result
     try {
-      await prisma.pricingResult.upsert({
+      const existing = await prisma.pricingResult.findFirst({
         where: { deviceId: deviceIdForDb },
-        create: {
-          deviceId: deviceIdForDb,
-          ...fallbackResult,
-          condition: device.condition as any,
-        },
-        update: {
-          ...fallbackResult,
-          condition: device.condition as any,
-        },
+        orderBy: { computedAt: "desc" },
       })
+
+      if (existing) {
+        await prisma.pricingResult.update({
+          where: { id: existing.id },
+          data: {
+            ...fallbackResult,
+            condition: device.condition as any,
+          },
+        })
+      } else {
+        await prisma.pricingResult.create({
+          data: {
+            deviceId: deviceIdForDb,
+            ...fallbackResult,
+            condition: device.condition as any,
+          },
+        })
+      }
     } catch (saveError) {
       console.error(`[Pricing Engine] Failed to save fallback result:`, saveError)
     }
