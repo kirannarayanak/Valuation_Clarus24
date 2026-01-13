@@ -30,7 +30,7 @@ async function syncDevice(device: ABMDevice) {
   const purchaseDate = parseDate(attrs.orderDateTime)
   const addedToOrgDate = parseDate(attrs.addedToOrgDateTime)
   const updatedDate = parseDate(attrs.updatedDateTime)
-  const releasedFromOrgDate = parseDate(attrs.releasedFromOrgDateTime || null)
+  const releasedFromOrgDate = parseDate(attrs.releasedFromOrgDateTime ?? undefined)
 
   const ethernetMacAddress = Array.isArray(attrs.ethernetMacAddress)
     ? attrs.ethernetMacAddress.join(", ")
