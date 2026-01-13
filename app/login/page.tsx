@@ -33,8 +33,10 @@ export default function LoginPage() {
       // Read the PEM file content
       let privateKeyBase64: string | null = null
       if (formData.privateKeyFile) {
+        // Read file as text (PEM files are text)
         const fileContent = await formData.privateKeyFile.text()
-        privateKeyBase64 = btoa(fileContent) // Base64 encode
+        // Convert to base64 - use btoa for text content
+        privateKeyBase64 = btoa(unescape(encodeURIComponent(fileContent)))
       }
 
       // Send credentials to login API

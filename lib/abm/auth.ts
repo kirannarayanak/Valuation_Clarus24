@@ -35,7 +35,35 @@ function loadPrivateKey(config: ABMConfig): string {
   
   if (config.privateKeyBase64) {
     try {
-      privateKeyPEM = Buffer.from(config.privateKeyBase64, "base64").toString("utf-8")
+      // Try multiple decoding approaches
+      let decoded: string
+      try {
+        // Standard base64 decode
+        decoded = Buffer.from(config.privateKeyBase64, "base64").toString("utf-8")
+      } catch (e1) {
+        try {
+          // Try if it's already a string (double-encoded)
+          decoded = Buffer.from(config.privateKeyBase64, "base64").toString("utf-8")
+          // If that doesn't work, try direct decode
+          if (!decoded.includes("BEGIN")) {
+            decoded = atob(config.privateKeyBase64)
+          }
+        } catch (e2) {
+          // Last resort: try as direct string
+          decoded = config.privateKeyBase64
+        }
+      }
+      
+      privateKeyPEM = decoded
+      
+      // If it's still base64 encoded (doesn't contain BEGIN), decode again
+      if (!privateKeyPEM.includes("BEGIN") && !privateKeyPEM.includes("PRIVATE")) {
+        try {
+          privateKeyPEM = Buffer.from(privateKeyPEM, "base64").toString("utf-8")
+        } catch {
+          // If that fails, it might already be decoded
+        }
+      }
     } catch (error) {
       throw new Error(`Failed to decode base64 private key: ${error instanceof Error ? error.message : String(error)}`)
     }
@@ -56,15 +84,14 @@ function loadPrivateKey(config: ABMConfig): string {
   // Remove any carriage returns and normalize line endings
   privateKeyPEM = privateKeyPEM.replace(/\r\n/g, "\n").replace(/\r/g, "\n")
   
-  // Ensure proper PEM format with newlines
-  if (!privateKeyPEM.includes("-----BEGIN PRIVATE KEY-----")) {
-    // Try to fix if headers are missing
-    if (privateKeyPEM.includes("BEGIN EC PRIVATE KEY")) {
-      // EC private key format - ensure proper headers
-      privateKeyPEM = privateKeyPEM.replace(/-----BEGIN EC PRIVATE KEY-----/g, "-----BEGIN EC PRIVATE KEY-----\n")
-      privateKeyPEM = privateKeyPEM.replace(/-----END EC PRIVATE KEY-----/g, "\n-----END EC PRIVATE KEY-----")
-    }
+  // Validate it's a PEM key
+  if (!privateKeyPEM.includes("-----BEGIN") || !privateKeyPEM.includes("-----END")) {
+    throw new Error("Invalid PEM format: missing BEGIN/END markers. The key might not be properly decoded.")
   }
+  
+  // Ensure proper line endings between header and content
+  privateKeyPEM = privateKeyPEM.replace(/-----BEGIN([^-]+)-----\s*/g, "-----BEGIN$1-----\n")
+  privateKeyPEM = privateKeyPEM.replace(/\s*-----END([^-]+)-----/g, "\n-----END$1-----")
   
   // Ensure proper line endings
   if (!privateKeyPEM.endsWith("\n")) {
