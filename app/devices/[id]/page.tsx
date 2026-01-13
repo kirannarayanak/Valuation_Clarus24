@@ -169,7 +169,7 @@ export default async function DeviceDetailPage({ params }: DeviceDetailPageProps
               <div className="grid gap-2">
                 <div className="text-sm font-medium">Estimated Price</div>
                 <div className="text-2xl font-bold">
-                  {formatCurrency(latestPricing.price, latestPricing.currency)}
+                  {formatCurrency(Number(latestPricing.price), latestPricing.currency)}
                 </div>
               </div>
 
