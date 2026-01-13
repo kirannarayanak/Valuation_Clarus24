@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { fetchDevices, type ABMDevice } from "@/lib/abm/api"
 import { maskSerialNumber } from "@/lib/utils"
 import type { ABMConfig } from "@/lib/abm/auth"
+import { ensureDatabaseSchema } from "@/lib/db"
 
 // Mark this route as dynamic to prevent build-time analysis
 export const dynamic = "force-dynamic"
@@ -107,6 +108,9 @@ export async function POST(request: NextRequest) {
     })
   }
   try {
+    // Ensure database schema exists before syncing
+    await ensureDatabaseSchema()
+    
     const body = await request.json()
     const { clientId, keyId, privateKeyBase64, limit, cursor } = body
 

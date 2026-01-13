@@ -3,7 +3,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/db"
+import { prisma, ensureDatabaseSchema } from "@/lib/db"
 
 // Mark this route as dynamic to prevent build-time analysis
 export const dynamic = "force-dynamic"
@@ -11,6 +11,8 @@ export const runtime = "nodejs"
 
 export async function GET(request: NextRequest) {
   try {
+    // Ensure database schema exists
+    await ensureDatabaseSchema()
     const [
       totalDevices,
       devicesByType,
