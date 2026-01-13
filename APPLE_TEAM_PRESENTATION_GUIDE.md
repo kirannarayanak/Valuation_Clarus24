@@ -642,7 +642,6 @@ Key tables:
 
 - `PRICING_FORMULA.md` - Complete formula documentation
 - `PRICING_CALCULATION_EXPLAINED.md` - How pricing works
-- `APPLE_PRESENTATION_NOTES.md` - Presentation notes
 - `README.md` - System overview
 
 ---
