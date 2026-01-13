@@ -76,6 +76,9 @@ export async function fetchDevices(
     url.searchParams.set("cursor", options.cursor)
   }
 
+  console.log(`[ABM API] Fetching devices from: ${url.toString()}`)
+  console.log(`[ABM API] Using access token: ${accessToken.substring(0, 20)}...`)
+  
   const response = await fetch(url.toString(), {
     method: "GET",
     headers: {
@@ -83,6 +86,8 @@ export async function fetchDevices(
       "Content-Type": "application/json",
     },
   })
+
+  console.log(`[ABM API] Response status: ${response.status} ${response.statusText}`)
 
   if (!response.ok) {
     const errorText = await response.text()
@@ -93,12 +98,20 @@ export async function fetchDevices(
       errorBody = { raw: errorText }
     }
 
+    console.error(`[ABM API] ✗ Request failed:`, errorBody)
     throw new Error(
       `ABM API request failed: ${response.status} ${response.statusText}. ${JSON.stringify(errorBody)}`
     )
   }
 
-  return (await response.json()) as ABMDevicesResponse
+  const responseData = await response.json() as ABMDevicesResponse
+  console.log(`[ABM API] ✓ Response received:`, {
+    deviceCount: responseData.data?.length || 0,
+    hasMeta: !!responseData.meta,
+    hasLinks: !!responseData.links,
+  })
+  
+  return responseData
 }
 
 /**
