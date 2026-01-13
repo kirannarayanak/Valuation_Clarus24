@@ -14,90 +14,92 @@ import type { ABMConfig } from "@/lib/abm/auth"
 // Mark this route as dynamic to prevent build-time analysis
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
-
-function parseDate(dateString: string | undefined): Date | null {
-  if (!dateString) return null
-  const date = new Date(dateString)
-  return isNaN(date.getTime()) ? null : date
-}
-
-function formatArray(value: string[] | undefined): string | null {
-  if (!value || !Array.isArray(value)) return null
-  return JSON.stringify(value)
-}
-
-async function syncDevice(device: ABMDevice) {
-  const attrs = device.attributes
-  const serialNumber = attrs.serialNumber || device.id
-  const serialNumberMasked = maskSerialNumber(serialNumber)
-
-  const purchaseDate = parseDate(attrs.orderDateTime)
-  const addedToOrgDate = parseDate(attrs.addedToOrgDateTime)
-  const updatedDate = parseDate(attrs.updatedDateTime)
-  const releasedFromOrgDate = parseDate(attrs.releasedFromOrgDateTime ?? undefined)
-
-  const ethernetMacAddress = Array.isArray(attrs.ethernetMacAddress)
-    ? attrs.ethernetMacAddress.join(", ")
-    : attrs.ethernetMacAddress || null
-
-  return prisma.device.upsert({
-    where: { deviceId: device.id },
-    create: {
-      deviceId: device.id,
-      serialNumber,
-      serialNumberMasked,
-      productFamily: attrs.productFamily || null,
-      deviceModel: attrs.deviceModel || null,
-      productType: attrs.productType || null,
-      deviceCapacity: attrs.deviceCapacity || null,
-      color: attrs.color || null,
-      status: attrs.status || null,
-      purchaseDate,
-      addedToOrgDate,
-      updatedDate,
-      wifiMacAddress: attrs.wifiMacAddress || null,
-      bluetoothMacAddress: attrs.bluetoothMacAddress || null,
-      ethernetMacAddress,
-      imei: formatArray(attrs.imei),
-      meid: formatArray(attrs.meid),
-      eid: attrs.eid || null,
-      assignedServerId: attrs.assignedServerId || null,
-      purchaseSourceType: attrs.purchaseSourceType || null,
-      purchaseSourceId: attrs.purchaseSourceId || null,
-      orderNumber: attrs.orderNumber || null,
-      releasedFromOrgDate,
-      rawPayload: device as any,
-      lastSeenFromABM: new Date(),
-    },
-    update: {
-      serialNumberMasked,
-      productFamily: attrs.productFamily || null,
-      deviceModel: attrs.deviceModel || null,
-      productType: attrs.productType || null,
-      deviceCapacity: attrs.deviceCapacity || null,
-      color: attrs.color || null,
-      status: attrs.status || null,
-      purchaseDate,
-      addedToOrgDate,
-      updatedDate,
-      wifiMacAddress: attrs.wifiMacAddress || null,
-      bluetoothMacAddress: attrs.bluetoothMacAddress || null,
-      ethernetMacAddress,
-      imei: formatArray(attrs.imei),
-      meid: formatArray(attrs.meid),
-      eid: attrs.eid || null,
-      assignedServerId: attrs.assignedServerId || null,
-      purchaseSourceType: attrs.purchaseSourceType || null,
-      purchaseSourceId: attrs.purchaseSourceId || null,
-      orderNumber: attrs.orderNumber || null,
-      releasedFromOrgDate,
-      rawPayload: device as any,
-      lastSeenFromABM: new Date(),
-    },
-  })
-}
+export const fetchCache = "force-no-store"
+export const revalidate = 0
 
 export async function POST(request: NextRequest) {
+  // Helper functions defined inside handler to prevent build-time analysis
+  function parseDate(dateString: string | undefined): Date | null {
+    if (!dateString) return null
+    const date = new Date(dateString)
+    return isNaN(date.getTime()) ? null : date
+  }
+
+  function formatArray(value: string[] | undefined): string | null {
+    if (!value || !Array.isArray(value)) return null
+    return JSON.stringify(value)
+  }
+
+  async function syncDevice(device: ABMDevice) {
+    const attrs = device.attributes
+    const serialNumber = attrs.serialNumber || device.id
+    const serialNumberMasked = maskSerialNumber(serialNumber)
+
+    const purchaseDate = parseDate(attrs.orderDateTime)
+    const addedToOrgDate = parseDate(attrs.addedToOrgDateTime)
+    const updatedDate = parseDate(attrs.updatedDateTime)
+    const releasedFromOrgDate = parseDate(attrs.releasedFromOrgDateTime ?? undefined)
+
+    const ethernetMacAddress = Array.isArray(attrs.ethernetMacAddress)
+      ? attrs.ethernetMacAddress.join(", ")
+      : attrs.ethernetMacAddress || null
+
+    return prisma.device.upsert({
+      where: { deviceId: device.id },
+      create: {
+        deviceId: device.id,
+        serialNumber,
+        serialNumberMasked,
+        productFamily: attrs.productFamily || null,
+        deviceModel: attrs.deviceModel || null,
+        productType: attrs.productType || null,
+        deviceCapacity: attrs.deviceCapacity || null,
+        color: attrs.color || null,
+        status: attrs.status || null,
+        purchaseDate,
+        addedToOrgDate,
+        updatedDate,
+        wifiMacAddress: attrs.wifiMacAddress || null,
+        bluetoothMacAddress: attrs.bluetoothMacAddress || null,
+        ethernetMacAddress,
+        imei: formatArray(attrs.imei),
+        meid: formatArray(attrs.meid),
+        eid: attrs.eid || null,
+        assignedServerId: attrs.assignedServerId || null,
+        purchaseSourceType: attrs.purchaseSourceType || null,
+        purchaseSourceId: attrs.purchaseSourceId || null,
+        orderNumber: attrs.orderNumber || null,
+        releasedFromOrgDate,
+        rawPayload: device as any,
+        lastSeenFromABM: new Date(),
+      },
+      update: {
+        serialNumberMasked,
+        productFamily: attrs.productFamily || null,
+        deviceModel: attrs.deviceModel || null,
+        productType: attrs.productType || null,
+        deviceCapacity: attrs.deviceCapacity || null,
+        color: attrs.color || null,
+        status: attrs.status || null,
+        purchaseDate,
+        addedToOrgDate,
+        updatedDate,
+        wifiMacAddress: attrs.wifiMacAddress || null,
+        bluetoothMacAddress: attrs.bluetoothMacAddress || null,
+        ethernetMacAddress,
+        imei: formatArray(attrs.imei),
+        meid: formatArray(attrs.meid),
+        eid: attrs.eid || null,
+        assignedServerId: attrs.assignedServerId || null,
+        purchaseSourceType: attrs.purchaseSourceType || null,
+        purchaseSourceId: attrs.purchaseSourceId || null,
+        orderNumber: attrs.orderNumber || null,
+        releasedFromOrgDate,
+        rawPayload: device as any,
+        lastSeenFromABM: new Date(),
+      },
+    })
+  }
   try {
     const body = await request.json()
     const { clientId, keyId, privateKeyBase64, limit, cursor } = body
