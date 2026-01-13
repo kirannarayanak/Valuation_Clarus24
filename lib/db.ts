@@ -42,19 +42,13 @@ export async function ensureDatabaseSchema() {
     console.log("✅ Database schema exists")
   } catch (error: any) {
     if (error?.message?.includes("does not exist")) {
-      console.log("⚠️  Database tables don't exist. Creating schema...")
-      try {
-        const { execSync } = require("child_process")
-        execSync("npx prisma db push --accept-data-loss --skip-generate", {
-          stdio: "inherit",
-          env: process.env,
-        })
-        schemaChecked = true
-        console.log("✅ Database schema created")
-      } catch (pushError) {
-        console.error("❌ Failed to create database schema:", pushError)
-        throw pushError
-      }
+      console.log("⚠️  Database tables don't exist.")
+      console.log("   Please visit /api/migrate to create tables")
+      // Don't try to create tables here - use the migrate endpoint instead
+      // This avoids issues with execSync in serverless environments
+      throw new Error(
+        "Database tables don't exist. Please visit /api/migrate first to create the schema."
+      )
     } else {
       throw error
     }
