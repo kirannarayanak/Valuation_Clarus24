@@ -103,44 +103,79 @@ export default function LoginPage() {
                   />
                 </svg>
               </button>
-              {/* Tooltip/Popover - Apple-style */}
-              <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-3 w-96 bg-white border border-gray-200/80 rounded-2xl shadow-2xl p-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none backdrop-blur-sm">
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 rotate-45 w-3 h-3 bg-white border-r border-b border-gray-200/80"></div>
-                <div className="relative z-10 space-y-4 text-sm">
-                  <h4 className="font-semibold text-gray-900 text-base mb-3">How to Get Your ABM Credentials</h4>
-                  <div className="space-y-3 text-xs text-gray-600 leading-relaxed">
-                    <div>
-                      <strong className="text-gray-900 font-medium">1. Access Apple Business Manager</strong>
-                      <p className="mt-1.5 text-gray-600">Log in to <a href="https://business.apple.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 underline">business.apple.com</a> with an Administrator or Device Enrollment Manager account.</p>
-                    </div>
-                    <div>
-                      <strong className="text-gray-900 font-medium">2. Navigate to API Integration</strong>
-                      <p className="mt-1.5 text-gray-600">Go to <strong className="font-semibold">Settings</strong> → <strong className="font-semibold">API Integration</strong> (or <strong className="font-semibold">Integrations</strong> → <strong className="font-semibold">API</strong>).</p>
-                    </div>
-                    <div>
-                      <strong className="text-gray-900 font-medium">3. Create a New API Key</strong>
-                      <p className="mt-1.5 text-gray-600">Click <strong className="font-semibold">"Create API Key"</strong> and give it a name (e.g., "Device Valuation App").</p>
-                    </div>
-                    <div>
-                      <strong className="text-gray-900 font-medium">4. Download Your Credentials</strong>
-                      <p className="mt-1.5 text-gray-600">Apple will provide:</p>
-                      <ul className="list-disc list-inside ml-2 mt-1.5 space-y-1 text-gray-600">
-                        <li><strong className="font-semibold">Client ID</strong>: Starts with <code className="bg-gray-100 px-1.5 py-0.5 rounded text-[11px] font-mono">BUSINESSAPI.</code></li>
-                        <li><strong className="font-semibold">Key ID</strong>: A UUID format string</li>
-                        <li><strong className="font-semibold">Private Key (.pem file)</strong>: Downloadable file</li>
-                      </ul>
-                      <div className="mt-2.5 p-2.5 bg-amber-50/80 border border-amber-200/60 rounded-lg">
-                        <p className="text-xs text-amber-800 leading-relaxed">
-                          <strong className="font-semibold">Important:</strong> The private key can only be downloaded once. Save it securely!
-                        </p>
+              {/* Tooltip/Popover - Apple-style, positioned above and larger */}
+              <div className="absolute right-0 bottom-full mb-4 w-[420px] max-h-[600px] overflow-y-auto bg-white border border-gray-200/80 rounded-2xl shadow-2xl p-6 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[100] pointer-events-none backdrop-blur-sm">
+                <div className="absolute bottom-0 right-6 translate-y-1/2 rotate-45 w-3 h-3 bg-white border-r border-b border-gray-200/80"></div>
+                <div className="relative z-10">
+                  <h4 className="font-semibold text-gray-900 text-base mb-4">How to Get Your ABM Credentials</h4>
+                  <div className="space-y-4 text-sm text-gray-700 leading-relaxed">
+                    <div className="pb-3 border-b border-gray-100">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-semibold mt-0.5">
+                          1
+                        </div>
+                        <div className="flex-1">
+                          <strong className="text-gray-900 font-semibold block mb-1.5">Access Apple Business Manager</strong>
+                          <p className="text-gray-600 text-sm leading-relaxed">Log in to <a href="https://business.apple.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 underline font-medium">business.apple.com</a> with an Administrator or Device Enrollment Manager account.</p>
+                        </div>
                       </div>
                     </div>
-                    <div>
-                      <strong className="text-gray-900 font-medium">5. Required Permissions</strong>
-                      <p className="mt-1.5 text-gray-600">Ensure your API key has <code className="bg-gray-100 px-1.5 py-0.5 rounded text-[11px] font-mono">business.api</code> scope and device read permissions.</p>
+                    <div className="pb-3 border-b border-gray-100">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-semibold mt-0.5">
+                          2
+                        </div>
+                        <div className="flex-1">
+                          <strong className="text-gray-900 font-semibold block mb-1.5">Navigate to API Integration</strong>
+                          <p className="text-gray-600 text-sm leading-relaxed">Go to <strong className="font-semibold text-gray-900">Settings</strong> → <strong className="font-semibold text-gray-900">API Integration</strong> (or <strong className="font-semibold text-gray-900">Integrations</strong> → <strong className="font-semibold text-gray-900">API</strong>).</p>
+                        </div>
+                      </div>
                     </div>
-                    <div className="pt-3 border-t border-gray-200/60">
-                      <p className="text-xs text-blue-600">
+                    <div className="pb-3 border-b border-gray-100">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-semibold mt-0.5">
+                          3
+                        </div>
+                        <div className="flex-1">
+                          <strong className="text-gray-900 font-semibold block mb-1.5">Create a New API Key</strong>
+                          <p className="text-gray-600 text-sm leading-relaxed">Click <strong className="font-semibold text-gray-900">"Create API Key"</strong> and give it a name (e.g., "Device Valuation App").</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="pb-3 border-b border-gray-100">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-semibold mt-0.5">
+                          4
+                        </div>
+                        <div className="flex-1">
+                          <strong className="text-gray-900 font-semibold block mb-1.5">Download Your Credentials</strong>
+                          <p className="text-gray-600 text-sm leading-relaxed mb-2">Apple will provide:</p>
+                          <ul className="list-disc list-inside ml-2 space-y-1.5 text-gray-600 text-sm mb-3">
+                            <li><strong className="font-semibold text-gray-900">Client ID</strong>: Starts with <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs font-mono text-gray-800">BUSINESSAPI.</code></li>
+                            <li><strong className="font-semibold text-gray-900">Key ID</strong>: A UUID format string</li>
+                            <li><strong className="font-semibold text-gray-900">Private Key (.pem file)</strong>: Downloadable file</li>
+                          </ul>
+                          <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                            <p className="text-xs text-amber-900 leading-relaxed">
+                              <strong className="font-semibold">Important:</strong> The private key can only be downloaded once. Save it securely!
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="pb-3">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-semibold mt-0.5">
+                          5
+                        </div>
+                        <div className="flex-1">
+                          <strong className="text-gray-900 font-semibold block mb-1.5">Required Permissions</strong>
+                          <p className="text-gray-600 text-sm leading-relaxed">Ensure your API key has <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs font-mono text-gray-800">business.api</code> scope and device read permissions.</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="pt-3 border-t border-gray-200">
+                      <p className="text-sm text-blue-600">
                         <a href="https://support.apple.com/guide/apple-business-manager/api-integration-apdbfa0c5b0a/web" target="_blank" rel="noopener noreferrer" className="hover:text-blue-700 underline font-medium">
                           View Apple's API Integration documentation →
                         </a>
